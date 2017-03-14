@@ -1,4 +1,4 @@
-package com.omega.framework.task;
+package com.omega.framework.index;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,13 +24,29 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by jackychenb on 12/12/2016.
  */
 
-public class TaskConsumerRegistry implements DisposableBean, SmartLifecycle, ApplicationContextAware,
+public class IndexWorkerRegistry implements DisposableBean, SmartLifecycle, ApplicationContextAware,
         ApplicationListener<ContextRefreshedEvent> {
 
-    private static final Logger logger = LoggerFactory.getLogger(TaskConsumerRegistry.class);
+    public static class InvocationTarget {
+        private final Object bean;
+        private final Method method;
+        public InvocationTarget(Object bean, Method method) {
+            this.bean = bean;
+            this.method = method;
+        }
+        public Object getBean() {
+            return bean;
+        }
+        public Method getMethod() {
+            return method;
+        }
+    }
 
-    private final Map<String, MessageListenerContainer> listenerContainers =
-            new ConcurrentHashMap<String, MessageListenerContainer>();
+    private static final Logger logger = LoggerFactory.getLogger(IndexWorkerRegistry.class);
+
+    private final Map<String, MessageListenerContainer> listenerContainers = new ConcurrentHashMap<>();
+
+    private final Map<String, InvocationTarget> invocationTargets = new ConcurrentHashMap<>();
 
     private int phase = Integer.MAX_VALUE;
 
@@ -39,28 +55,32 @@ public class TaskConsumerRegistry implements DisposableBean, SmartLifecycle, App
     private boolean contextRefreshed;
 
     private final ConnectionFactory connectionFactory;
-    private final TaskConsumerInvoker taskConsumerInvoker;
+    private final IndexWorkerInvoker taskConsumerInvoker;
 
-    public TaskConsumerRegistry(ConnectionFactory connectionFactory,
-                                TaskConsumerInvoker taskConsumerInvoker) {
+    public IndexWorkerRegistry(ConnectionFactory connectionFactory,
+                               IndexWorkerInvoker taskConsumerInvoker) {
 
         this.connectionFactory = connectionFactory;
         this.taskConsumerInvoker = taskConsumerInvoker;
     }
 
-    public void register(TaskConsumer consumer, final Object bean, final Method method) {
+    public void register(IndexWorker consumer, final Object bean, final Method method) {
+        String type = consumer.value();
+        InvocationTarget invocationTarget = new InvocationTarget(bean, method);
+
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
-        container.setQueueNames(consumer.value());
+        container.setQueueNames(type);
         container.setMessageListener(new MessageListener() {
 
             @Override
             public void onMessage(Message message) {
-                taskConsumerInvoker.invoke(message, bean, method);
+                taskConsumerInvoker.invoke(message, invocationTarget);
             }
         });
 
         listenerContainers.put(getIdForContainer(bean, method), container);
+        invocationTargets.put(type, invocationTarget);
     }
 
     protected String getIdForContainer(Object bean, Method method) {
@@ -70,6 +90,10 @@ public class TaskConsumerRegistry implements DisposableBean, SmartLifecycle, App
 
     public Collection<MessageListenerContainer> getListenerContainers() {
         return Collections.unmodifiableCollection(this.listenerContainers.values());
+    }
+
+    public InvocationTarget getInvocationTarget(String type) {
+        return invocationTargets.get(type);
     }
 
     @Override

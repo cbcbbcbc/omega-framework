@@ -38,11 +38,11 @@ public class AsyncTaskScheduler {
 
     private static final Logger logger = LoggerFactory.getLogger(AsyncTaskScheduler.class);
 
-    @Value("${task.scheduler.loadInterval:10}")
-    private int loadInterval = 10;
+    @Value("${task.scheduler.loadInterval:10000}")
+    private long loadInterval = 10000;
 
     @Autowired
-    private JdbcTemplate jdbcTemplate; // TODO: 需要遍历所有的数据库中的Task表
+    private JdbcTemplate jdbcTemplate; // TODO: 分库情况下需要遍历所有的数据库中的Task表
 
     @Value("${task.tableName:Task}")
     private String taskTableName = "Task";
@@ -66,36 +66,39 @@ public class AsyncTaskScheduler {
 
     @RequestMapping(value="/schedule", method = RequestMethod.POST)
     public void scheduleTask(@RequestBody Task task) {
-        if (task.triggerTime.getTime() >= endTime) {
+        Date triggerTime = task.getTriggerTime();
+        if (triggerTime.getTime() >= endTime) {
             return;
         }
 
-        ScheduledFuture oldTask = taskMap.get(task.id);
+        String taskId = task.getId();
+        ScheduledFuture oldTask = taskMap.get(taskId);
         if (oldTask != null) {
             return;
         }
 
-        if (!queueNameSet.containsKey(task.type)) {
+        String type = task.getType();
+        if (!queueNameSet.containsKey(type)) {
             synchronized (rabbitAdmin) {
-                Queue queue = new Queue(task.type);
+                Queue queue = new Queue(type);
                 DirectExchange exchange = new DirectExchange(exchangeName);
-                Binding binding = BindingBuilder.bind(queue).to(exchange).with(task.type);
+                Binding binding = BindingBuilder.bind(queue).to(exchange).with(type);
                 rabbitAdmin.declareQueue(queue);
                 rabbitAdmin.declareExchange(exchange);
                 rabbitAdmin.declareBinding(binding);
 
-                queueNameSet.put(task.type, Boolean.TRUE);
+                queueNameSet.put(type, Boolean.TRUE);
             }
         }
 
-        long delay = task.triggerTime.getTime() - new Date().getTime();
+        long delay = triggerTime.getTime() - new Date().getTime();
         if (delay < 0) {
             delay = 0;
         }
 
         ScheduledFuture future = scheduledThreadPoolExecutor.schedule(new ScheduledTask(task),
                 delay, TimeUnit.MILLISECONDS);
-        taskMap.put(task.id, future);
+        taskMap.put(taskId, future);
     }
 
     @RequestMapping("/unschedule/{id}")
@@ -109,47 +112,40 @@ public class AsyncTaskScheduler {
         taskMap.remove(id);
     }
 
-    @Scheduled(cron = "0 0/${task.scheduler.loadInterval:10} * * * ?")
+    @Scheduled(fixedDelayString="${task.scheduler.loadInterval:10000}")
     public void schedule() {
-        endTime = new Date().getTime() + loadInterval * 60 * 1000;
+        endTime = new Date().getTime() + loadInterval * 60;
         taskMap.clear();
 
         Date triggerTime = new Date(endTime);
         String startId = "0";
         List<Map<String, Object>> taskList;
         do {
-//            taskList = jdbcTemplate.queryForList("select * from " + taskTableName +
-//                            " where triggerTime<? and id>? " +
-//                            " order by id " +
-//                            " limit 100", new Object[] { triggerTime, startId });
-
-            // 为了兼容MySQL与Oracle，不分页了
             taskList = jdbcTemplate.queryForList("select * from " + taskTableName +
-                    " where triggerTime<?", new Object[] { triggerTime });
+                            " where triggerTime<? and id>? " +
+                            " order by id " +
+                            " limit 100", new Object[] { triggerTime, startId });
 
             ObjectMapper mapper = new ObjectMapper();
             for (Map<String, Object> m : taskList) {
                 Task t = new Task();
-                t.id = (String) m.get("id");
-                t.type = (String) m.get("type");
-                t.triggerTime = (Date) m.get("triggerTime");
+                t.setId((String) m.get("id"));
+                t.setType((String) m.get("type"));
+                t.setTriggerTime((Date) m.get("triggerTime"));
 
                 String dataMapString = (String) m.get("dataMap");
                 if (StringUtils.isNotBlank(dataMapString)) {
                     try {
-                        t.dataMap = mapper.readValue(dataMapString, HashMap.class);
+                        t.setDataMap(mapper.readValue(dataMapString, HashMap.class));
                     } catch (IOException e) {
-                        logger.error("failed to read data map of task " + t.id, e);
+                        logger.error("failed to read data map of task " + t.getId(), e);
                         continue;
                     }
                 }
 
                 scheduleTask(t);
-                startId = t.id;
+                startId = t.getId();
             }
-
-            // 为了兼容MySQL与Oracle，不分页了
-            break;
         } while (taskList.size() > 0);
     }
 
@@ -164,9 +160,9 @@ public class AsyncTaskScheduler {
             try {
                 ObjectMapper mapper = new ObjectMapper();
                 String taskString = mapper.writeValueAsString(task);
-                rabbitTemplate.convertAndSend(exchangeName, task.type, taskString);
+                rabbitTemplate.convertAndSend(exchangeName, task.getType(), taskString);
             } catch (Exception e) {
-                logger.error("failed to dispatch task " + task.id, e);
+                logger.error("failed to dispatch task " + task.getId(), e);
             }
         }
 

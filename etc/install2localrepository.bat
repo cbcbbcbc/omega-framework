@@ -20,3 +20,9 @@ copy /y  omega-framework-datasource\pom.xml  "%M2_HOME%\.m2\repository\com\omega
 call mvn install:install-file -DgroupId=com.omega.framework -DartifactId=omega-framework-task-common -Dversion=0.1 -Dfile=..\lib\omega-framework-task-common-0.1.jar  -DgeneratePom=true -Dpackaging=jar
 
 copy /y  omega-framework-task-common\pom.xml "%M2_HOME%\.m2\repository\com\omega\framework\omega-framework-task-common\0.1\omega-framework-task-common-0.1.pom"
+
+
+
+call mvn install:install-file -DgroupId=com.omega.framework -DartifactId=omega-framework-index-common -Dversion=0.1 -Dfile=..\lib\omega-framework-index-common-0.1.jar  -DgeneratePom=true -Dpackaging=jar
+
+copy /y  omega-framework-index-common\pom.xml "%M2_HOME%\.m2\repository\com\omega\framework\omega-framework-index-common\0.1\omega-framework-index-common-0.1.pom"

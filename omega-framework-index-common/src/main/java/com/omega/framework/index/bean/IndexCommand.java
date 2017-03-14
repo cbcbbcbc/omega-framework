@@ -1,30 +1,30 @@
-package com.omega.framework.task.bean;
+package com.omega.framework.index.bean;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Created by jackychenb on 11/12/2016.
  */
-public class Task {
+public class IndexCommand {
+
+    public static final int OP_ADD = 1;
+    public static final int OP_DELETE = 2;
 
     private String id;
     private String type;
-    private Date triggerTime;
+    private String indexName;
+    private int op;
     private Map<String ,String> dataMap = new HashMap<>();
 
-    public Task() {
+    public IndexCommand() {
 
     }
 
-    public Task(String type, Date triggerTime) {
+    public IndexCommand(String type, String indexName, int op) {
         this.type = type;
-        this.triggerTime = triggerTime;
-    }
-
-    public Task(String type) {
-        this(type, null);
+        this.indexName = indexName;
+        this.op = op;
     }
 
     public String getId() {
@@ -43,12 +43,20 @@ public class Task {
         this.type = type;
     }
 
-    public Date getTriggerTime() {
-        return triggerTime;
+    public String getIndexName() {
+        return indexName;
     }
 
-    public void setTriggerTime(Date triggerTime) {
-        this.triggerTime = triggerTime;
+    public void setIndexName(String indexName) {
+        this.indexName = indexName;
+    }
+
+    public int getOp() {
+        return op;
+    }
+
+    public void setOp(int op) {
+        this.op = op;
     }
 
     public Map<String, String> getDataMap() {
@@ -59,9 +67,13 @@ public class Task {
         this.dataMap = dataMap;
     }
 
-    public Task data(String key, String value) {
+    public IndexCommand data(String key, String value) {
         dataMap.put(key, value);
         return this;
+    }
+
+    public String data(String key) {
+        return dataMap.get(key);
     }
 
     @Override
@@ -75,11 +87,11 @@ public class Task {
             return false;
         }
 
-        if (!(obj instanceof Task)) {
+        if (!(obj instanceof IndexCommand)) {
             return false;
         }
 
-        return ((Task) obj).id.equals(id);
+        return ((IndexCommand) obj).id.equals(id);
     }
 
 }

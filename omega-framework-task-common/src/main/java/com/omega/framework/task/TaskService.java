@@ -30,7 +30,7 @@ public interface TaskService {
 
         @Override
         public void scheduleTask(@RequestBody Task task) {
-            logger.error("failed to schedule task: " + task.id);
+            logger.error("failed to schedule task: " + task.getId());
         }
 
         @Override

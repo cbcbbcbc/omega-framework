@@ -23,3 +23,10 @@ mvn install:install-file -DgroupId=com.omega.framework -DartifactId=omega-framew
   -Dfile=../lib/omega-framework-task-common-0.1.jar  -DgeneratePom=true -Dpackaging=jar
 
 cp omega-framework-task-common/pom.xml ~/.m2/repository/com/omega/framework/omega-framework-task-common/0.1/omega-framework-task-common-0.1.pom
+
+
+
+mvn install:install-file -DgroupId=com.omega.framework -DartifactId=omega-framework-index-common -Dversion=0.1 \
+  -Dfile=../lib/omega-framework-index-common-0.1.jar  -DgeneratePom=true -Dpackaging=jar
+
+cp omega-framework-index-common/pom.xml ~/.m2/repository/com/omega/framework/omega-framework-index-common/0.1/omega-framework-index-common-0.1.pom

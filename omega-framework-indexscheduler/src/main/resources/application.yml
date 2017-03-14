@@ -19,12 +19,13 @@ mycat:
       testOnBorrow: true
   servers: localhost:8066
 
-task:
-  scheduler:
-    loadInterval: 10000
-
 zookeeper:
   servers: 127.0.0.1:2181
+
+elasticsearch:
+  index:
+    scheduler:
+      loadInterval: 10000
 
 hystrix:
   command:

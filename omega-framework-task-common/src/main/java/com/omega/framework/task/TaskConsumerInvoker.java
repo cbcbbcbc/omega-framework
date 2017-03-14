@@ -2,6 +2,7 @@ package com.omega.framework.task;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.omega.framework.task.bean.Task;
+import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,46 +22,21 @@ import java.lang.reflect.Method;
  */
 
 @Component
-@EnableConfigurationProperties(ZooKeeperProperties.class)
-public class TaskConsumerInvoker implements Watcher {
+public class TaskConsumerInvoker {
 
     private static final Logger logger = LoggerFactory.getLogger(TaskConsumerInvoker.class);
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private CuratorFramework curatorFramework;
+
     @Value("${task.tableName:Task}")
     private String taskTableName;
 
-    @Autowired
-    private ZooKeeperProperties zooKeeperProperties;
-
     @Value("${task.lockPath:/task}")
     private String lockPath = "/task";
-
-    private ZooKeeper zooKeeper;
-
-    @Override
-    public void process(WatchedEvent event) {
-
-    }
-
-    @PostConstruct
-    public void init() throws Exception {
-        zooKeeper = new ZooKeeper(zooKeeperProperties.getServers(), zooKeeperProperties.getSessionTimeout(), this);
-        if (zooKeeper.exists(lockPath, false) == null) {
-            zooKeeper.create(lockPath, null, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-        }
-    }
-
-    @PreDestroy
-    public void close() {
-        try {
-            zooKeeper.close();
-        } catch (InterruptedException e) {
-
-        }
-    }
 
     private String getLockName(String taskId) {
         return lockPath + "/" + taskId;
@@ -70,7 +46,7 @@ public class TaskConsumerInvoker implements Watcher {
         String lockName = getLockName(taskId);
 
         try {
-            zooKeeper.create(lockName, null, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+            curatorFramework.create().withMode(CreateMode.EPHEMERAL).forPath(lockName);
         } catch (KeeperException e) {
             if (KeeperException.Code.NODEEXISTS.equals(e.code())) {
                 logger.warn("There is already a task with id " + taskId + " being executing");
@@ -91,7 +67,7 @@ public class TaskConsumerInvoker implements Watcher {
         String lockName = getLockName(taskId);
 
         try {
-            zooKeeper.delete(lockName, -1);
+            curatorFramework.delete().forPath(lockName);
         } catch (Exception e) {
             logger.error("Failed to delete zookeeper node: " + lockName, e);
         }
@@ -108,7 +84,8 @@ public class TaskConsumerInvoker implements Watcher {
             return;
         }
 
-        if (!lock(task.id)) {
+        String taskId = task.getId();
+        if (!lock(taskId)) {
             return;
         }
 
@@ -116,19 +93,19 @@ public class TaskConsumerInvoker implements Watcher {
             try {
                 method.invoke(bean, task);
             } catch (Exception e) {
-                logger.error("failed to execute task: " + task.id, e);
+                logger.error("failed to execute task: " + taskId, e);
                 return;
             }
 
             try {
                 jdbcTemplate.update("delete from " + taskTableName + " where id=?",
-                        new Object[]{ task.id });
+                        new Object[]{ taskId });
             } catch (Exception e) {
-                logger.error("failed to delete task: " + task.id, e);
+                logger.error("failed to delete task: " + taskId, e);
                 return;
             }
         } finally {
-            unlock(task.id);
+            unlock(taskId);
         }
     }
 

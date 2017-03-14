@@ -48,6 +48,11 @@
             <artifactId>omega-framework-taskserver</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>omega-framework-indexscheduler</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

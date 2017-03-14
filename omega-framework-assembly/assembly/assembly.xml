@@ -49,5 +49,9 @@
             <source>../omega-framework-task-common/pom.xml</source>
             <outputDirectory>etc/omega-framework-task-common</outputDirectory>
         </file>
+        <file>
+            <source>../omega-framework-index-common/pom.xml</source>
+            <outputDirectory>etc/omega-framework-index-common</outputDirectory>
+        </file>
     </files>
 </assembly>
