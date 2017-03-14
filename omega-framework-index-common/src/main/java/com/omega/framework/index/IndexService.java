@@ -36,8 +36,8 @@ public class IndexService {
     @Value("${elasticsearch.index.commandTableName:IndexCommand}")
     private String commandTableName = "IndexCommand";
 
-    @Value("${elasticsearch.refresh.interval:10}")
-    private int refreshInterval = 10;
+    @Value("${elasticsearch.refresh.interval:30000}")
+    private long refreshInterval = 30000;
 
     @Value("${elasticsearch.refresh.duration:500}")
     private long refreshDuration = 500L; // 预估的最长的refresh调用耗时，单位毫秒
@@ -80,7 +80,7 @@ public class IndexService {
         IndexWorkerRegistry.InvocationTarget invocationTarget = indexWorkerRegistry.getInvocationTarget(cmd.getType());
         indexWorkerInvoker.invoke(cmd, invocationTarget);
 
-        long lifecycle = refreshInterval * 1000 + refreshDuration;
+        long lifecycle = refreshInterval + refreshDuration;
         redisTemplate.opsForValue().set(cmd.getId(), System.currentTimeMillis(), lifecycle, TimeUnit.MILLISECONDS);
     }
 
