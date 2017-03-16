@@ -54,7 +54,10 @@ public class IndexScheduler {
     private RabbitAdmin rabbitAdmin;
 
     private final Set<String> queueNameSet = new HashSet<String>();
+
     private Map<Integer, Long> lastRunSNMap = Collections.EMPTY_MAP; // 上一轮调度的任务SN范围
+    private int busyCount = 0;
+    private int idleCount = 0;
 
     @Scheduled(fixedDelayString="${elasticsearch.index.scheduler.loadInterval:10000")
     public void schedule() throws Exception {
@@ -101,23 +104,37 @@ public class IndexScheduler {
             }
 
             // 查到最后一页了
-            int n = cmdList.size();
-            if (n < loadBatchSize) {
+            if (cmdList.size() < loadBatchSize) {
                 break;
             }
 
             // 最后一次还是查到整页记录
-            if (i == (loadTimes - 1) && n == loadBatchSize) {
+            if (i == (loadTimes - 1)) {
                 full = true;
             }
         }
 
         if (overlapped) {
-            if (loadTimes > 1) {
+            busyCount++;
+            idleCount = 0;
+            if (busyCount > 1) {
+                loadTimes /= 2;
+            } else {
                 loadTimes--;
             }
         } else if (full) {
-            loadTimes++;
+            idleCount++;
+            busyCount = 0;
+            if (idleCount > 1) {
+                loadTimes *= 2;
+            } else {
+                loadTimes++;
+            }
+        } else if (loadTimes == 0) {
+            busyCount--;
+            if (busyCount == 0) {
+                loadTimes = 1;
+            }
         }
 
         lastRunSNMap = snMap;
