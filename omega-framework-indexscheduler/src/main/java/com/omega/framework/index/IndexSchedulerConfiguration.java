@@ -18,16 +18,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Configuration
 public class IndexSchedulerConfiguration {
 
-    @Value("${task.scheduler.poolSize:1}")
-    private int poolSize = 1;
-
-    @Bean
-    public ScheduledThreadPoolExecutor scheduledThreadPoolExecutor() {
-        return new ScheduledThreadPoolExecutor(poolSize,
-                Executors.defaultThreadFactory(),
-                new ThreadPoolExecutor.AbortPolicy());
-    }
-
     @Bean
     public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
         return new RabbitAdmin(connectionFactory);

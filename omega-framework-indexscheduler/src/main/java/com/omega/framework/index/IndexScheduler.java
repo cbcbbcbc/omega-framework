@@ -59,7 +59,7 @@ public class IndexScheduler {
     private int busyCount = 0;
     private int idleCount = 0;
 
-    @Scheduled(fixedDelayString="${elasticsearch.index.scheduler.loadInterval:10000")
+    @Scheduled(fixedDelayString="${elasticsearch.index.scheduler.loadInterval:10000}")
     public void schedule() throws Exception {
         Date endTime = new Date(System.currentTimeMillis() - indexDuration);
         Map<Integer, Long> snMap = new HashMap<Integer, Long>();
