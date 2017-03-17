@@ -11,8 +11,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 public class CacheClientConfiguration {
 
     @Bean
-    public CacheClient cacheClient(RedisTemplate redisTemplate) {
-        return new CacheClient(redisTemplate);
+    public ICacheClient cacheClient(RedisTemplate redisTemplate) {
+        return new RedisCacheClient(redisTemplate);
     }
 
 }

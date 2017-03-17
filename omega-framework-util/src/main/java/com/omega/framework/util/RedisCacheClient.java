@@ -16,10 +16,10 @@ import java.util.concurrent.TimeUnit;
  * Created by jackychenb on 12/12/2016.
  */
 
-public class CacheClient {
+public class RedisCacheClient implements  ICacheClient {
 
     private final RedisTemplate redisTemplate;
-    public CacheClient(RedisTemplate redisTemplate) {
+    public RedisCacheClient(RedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
