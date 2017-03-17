@@ -1,4 +1,4 @@
-package com.omega.framework.util;
+package com.omega.framework.util.cache;
 
 import org.springframework.context.annotation.Import;
 
