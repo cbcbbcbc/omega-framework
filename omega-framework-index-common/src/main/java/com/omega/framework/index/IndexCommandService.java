@@ -128,7 +128,7 @@ public class IndexCommandService {
         return lockPath + "/" + indexName;
     }
 
-    public void ensureRefresh(String indexName, String lastCommandId) throws Exception {
+    public void ensureRefresh(String indexName, String lastCommandId) {
         Long submitTime = (Long) redisTemplate.opsForValue().get(lastCommandId);
         if (submitTime == null) {
             return;
@@ -156,8 +156,14 @@ public class IndexCommandService {
                 elasticsearchClient.admin().indices().prepareRefresh(indexName).get();
                 redisTemplate.opsForValue().set(key, now);
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         } finally {
-            lock.release();
+            try {
+                lock.release();
+            } catch (Exception e) {
+                // ignored
+            }
         }
     }
 
