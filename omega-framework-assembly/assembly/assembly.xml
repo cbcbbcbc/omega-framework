@@ -42,6 +42,10 @@
             <outputDirectory>etc/omega-framework</outputDirectory>
         </file>
         <file>
+            <source>../omega-framework-util/pom.xml</source>
+            <outputDirectory>etc/omega-framework-util</outputDirectory>
+        </file>
+        <file>
             <source>../omega-framework-datasource/pom.xml</source>
             <outputDirectory>etc/omega-framework-datasource</outputDirectory>
         </file>

@@ -45,6 +45,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>omega-framework-util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>omega-framework-taskserver</artifactId>
             <version>${project.version}</version>
         </dependency>

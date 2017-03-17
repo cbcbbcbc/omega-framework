@@ -1,14 +1,23 @@
 #!/usr/bin/env bash
 
 rm -rf ~/.m2/repository/com/omega/framework/omega-framework
+rm -rf ~/.m2/repository/com/omega/framework/omega-framework-util
 rm -rf ~/.m2/repository/com/omega/framework/omega-framework-datasource
 rm -rf ~/.m2/repository/com/omega/framework/omega-framework-task-common
+rm -rf ~/.m2/repository/com/omega/framework/omega-framework-index-common
 
 
 
 mkdir  -p ~/.m2/repository/com/omega/framework/omega-framework/0.1
 
 cp omega-framework/pom.xml ~/.m2/repository/com/omega/framework/omega-framework/0.1/omega-framework-0.1.pom
+
+
+
+mvn install:install-file -DgroupId=com.omega.framework -DartifactId=omega-framework-util -Dversion=0.1 \
+  -Dfile=../lib/omega-framework-util-0.1.jar  -DgeneratePom=true -Dpackaging=jar
+
+cp omega-framework-util/pom.xml ~/.m2/repository/com/omega/framework/omega-framework-util/0.1/omega-framework-util-0.1.pom
 
 
 
