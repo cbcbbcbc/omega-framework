@@ -53,4 +53,17 @@ public class CacheClient {
         return redisTemplate.opsForValue().get(key);
     }
 
+    public void remove(final String key) {
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronizationAdapter() {
+                        public void afterCommit() {
+                            redisTemplate.delete(key);
+                        }
+                    });
+        } else {
+            redisTemplate.delete(key);
+        }
+    }
+
 }
