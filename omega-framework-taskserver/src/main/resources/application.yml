@@ -12,12 +12,12 @@ spring:
 mycat:
   datasource:
     driverClassName: com.mysql.jdbc.Driver
-    url: jdbc:mysql://mycat/sk_dev?useOldAliasMetadataBehavior=true
-    username: mycat
-    password: mycat
+    url: jdbc:mysql://localhost/sk?useOldAliasMetadataBehavior=true
+    username: root
+    password: rootpass
     tomcat:
       testOnBorrow: true
-  servers: localhost:8066
+  servers: localhost:3306
 
 task:
   scheduler:

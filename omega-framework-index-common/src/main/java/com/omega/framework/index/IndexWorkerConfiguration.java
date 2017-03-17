@@ -32,17 +32,17 @@ public class IndexWorkerConfiguration {
     private String elasticsearchEndPoints;
 
     @Bean
-    public IndexWorkerAnnotationBeanPostProcessor taskConsumerAnnotationBeanPostProcessor(
-            IndexWorkerRegistry taskConsumerRegistry) {
+    public IndexWorkerAnnotationBeanPostProcessor indexWorkerAnnotationBeanPostProcessor(
+            IndexWorkerRegistry indexWorkerRegistry) {
 
-        return new IndexWorkerAnnotationBeanPostProcessor(taskConsumerRegistry);
+        return new IndexWorkerAnnotationBeanPostProcessor(indexWorkerRegistry);
     }
 
     @Bean
-    public IndexWorkerRegistry taskConsumerRegistry(ConnectionFactory connectionFactory,
-                                                    IndexWorkerInvoker taskConsumerInvoker) {
+    public IndexWorkerRegistry indexWorkerRegistry(ConnectionFactory connectionFactory,
+                                                    IndexWorkerInvoker indexWorkerInvoker) {
 
-        return new IndexWorkerRegistry(connectionFactory, taskConsumerInvoker);
+        return new IndexWorkerRegistry(connectionFactory, indexWorkerInvoker);
     }
 
     @Bean(initMethod="start", destroyMethod="close")

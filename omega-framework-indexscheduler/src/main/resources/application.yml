@@ -1,5 +1,5 @@
 server:
-  port: 8085
+  port: 8086
 
 spring:
   rabbitmq:
@@ -12,17 +12,19 @@ spring:
 mycat:
   datasource:
     driverClassName: com.mysql.jdbc.Driver
-    url: jdbc:mysql://mycat/sk_dev?useOldAliasMetadataBehavior=true
-    username: mycat
-    password: mycat
+    url: jdbc:mysql://localhost/sk?useOldAliasMetadataBehavior=true
+    username: root
+    password: rootpass
     tomcat:
       testOnBorrow: true
-  servers: localhost:8066
+  servers: localhost:3306
 
 zookeeper:
   servers: 127.0.0.1:2181
 
 elasticsearch:
+  clusterName: omega
+  endPoints: localhost:9300
   index:
     scheduler:
       loadInterval: 10000

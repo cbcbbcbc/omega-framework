@@ -1,6 +1,6 @@
 spring:
   application:
-    name: omega-framework-taskserver
+    name: omega-framework-indexscheduler
   cloud:
     config:
       discovery:

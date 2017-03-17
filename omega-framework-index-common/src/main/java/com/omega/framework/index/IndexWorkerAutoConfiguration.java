@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ComponentScan
-@EnableFeignClients
 public class IndexWorkerAutoConfiguration {
 
 
