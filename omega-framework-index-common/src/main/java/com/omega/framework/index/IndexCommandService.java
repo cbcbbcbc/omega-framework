@@ -41,11 +41,8 @@ public class IndexCommandService {
     @Value("${elasticsearch.index.commandTableName:IndexCommand}")
     private String commandTableName = "IndexCommand";
 
-    @Value("${elasticsearch.refresh.interval:30000}")
-    private long refreshInterval = 30000;
-
     @Value("${elasticsearch.refresh.duration:500}")
-    private long refreshDuration = 500L; // 预估的最长的refresh调用耗时，单位毫秒
+    private long refreshDuration = 500L; // 预估的最长的refresh调用耗时
 
     @Autowired
     private CuratorFramework curatorFramework;
@@ -55,6 +52,9 @@ public class IndexCommandService {
 
     @Value("${elasticsearch.refresh.lockPath:/index/refresh}")
     private String lockPath = "/index/refresh";
+
+    @Autowired
+    private IndexWorkerHelper indexWorkerHelper;
 
     public String exec(final IndexCommand cmd) {
         checkCommand(cmd);
@@ -92,10 +92,7 @@ public class IndexCommandService {
 
     private void invokeCommand(IndexCommand cmd) {
         IndexWorkerRegistry.InvocationTarget invocationTarget = indexWorkerRegistry.getInvocationTarget(cmd.getType());
-        indexWorkerInvoker.invoke(cmd, invocationTarget);
-
-        long lifecycle = refreshInterval + refreshDuration;
-        redisTemplate.opsForValue().set(cmd.getId(), System.currentTimeMillis(), lifecycle, TimeUnit.MILLISECONDS);
+        indexWorkerInvoker.invoke(cmd, invocationTarget, true);
     }
 
     protected void checkCommand(IndexCommand cmd) {
@@ -130,15 +127,28 @@ public class IndexCommandService {
         return lockPath + "/" + indexName;
     }
 
-    public void ensureRefresh(String indexName, String lastCommandId) {
-        Long submitTime = (Long) redisTemplate.opsForValue().get(lastCommandId);
-        if (submitTime == null) {
+    public void ensureRefresh(String indexName) {
+        Long indexTime = indexWorkerHelper.getLastCommandFinishTime(indexName);
+        if (indexTime == null) {
             return;
         }
 
+        ensureRefresh(indexName, indexTime);
+    }
+
+    public void ensureRefresh(String indexName, String lastCommandId) {
+        Long indexTime = indexWorkerHelper.getCommandFinishTime(lastCommandId);
+        if (indexTime == null) {
+            return;
+        }
+
+        ensureRefresh(indexName, indexTime);
+    }
+
+    private void ensureRefresh(String indexName, Long indexTime) {
         String key = getRefreshCacheKey(indexName);
         Long refreshTime = (Long) redisTemplate.opsForValue().get(key);
-        if (refreshTime != null && submitTime.compareTo(refreshTime) < 0) {
+        if (refreshTime != null && indexTime.compareTo(refreshTime) < 0) {
             return;
         }
 
@@ -149,7 +159,7 @@ public class IndexCommandService {
             if (lock.acquire(refreshDuration, TimeUnit.MILLISECONDS)) {
                 // 获得锁后再次检查索引库更新时间
                 Long refreshTime2 = (Long) redisTemplate.opsForValue().get(key);
-                if (refreshTime2 != null && submitTime.compareTo(refreshTime2) < 0) {
+                if (refreshTime2 != null && indexTime.compareTo(refreshTime2) < 0) {
                     return;
                 }
 
