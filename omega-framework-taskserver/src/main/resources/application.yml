@@ -12,7 +12,7 @@ spring:
 mycat:
   datasource:
     driverClassName: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost/sk?useOldAliasMetadataBehavior=true
+    url: jdbc:mysql://localhost/sk_dev?useOldAliasMetadataBehavior=true
     username: root
     password: rootpass
     tomcat:
