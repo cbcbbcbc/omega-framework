@@ -7,11 +7,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by jackychenb on 12/12/2016.
@@ -28,9 +25,6 @@ public class IndexWorkerInvoker {
     @Value("${elasticsearch.index.commandTableName:IndexCommand}")
     private String commandTableName;
 
-    @Autowired
-    private IndexWorkerHelper indexWorkerHelper;
-
     public void invoke(Message message, IndexWorkerRegistry.InvocationTarget invocationTarget) {
         IndexCommand cmd;
         try {
@@ -42,34 +36,19 @@ public class IndexWorkerInvoker {
             return;
         }
 
-        invoke(cmd, invocationTarget, false);
+        try {
+            invoke(cmd, invocationTarget);
+        } catch (Exception e) {
+            logger.error("failed to execute command: " + cmd.getId(), e);
+            return;
+        }
     }
 
-    public void invoke(IndexCommand cmd, IndexWorkerRegistry.InvocationTarget invocationTarget, boolean sync) {
-        String cmdId = cmd.getId();
-
-        try {
-            invocationTarget.getMethod().invoke(invocationTarget.getBean(), cmd);
-        } catch (Exception e) {
-            logger.error("failed to execute command: " + cmdId, e);
-            return;
-        }
-
-        long now = System.currentTimeMillis();
-
-        if (sync) {
-            indexWorkerHelper.saveCommandFinishTime(cmdId, now);
-        }
-
-        indexWorkerHelper.saveLastCommandFinishTime(cmd.getIndexName(), now);
-
-        try {
-            jdbcTemplate.update("delete from " + commandTableName + " where id=?",
-                    new Object[]{ cmdId });
-        } catch (Exception e) {
-            logger.error("failed to delete command: " + cmdId, e);
-            return;
-        }
+    public Long invoke(IndexCommand cmd, IndexWorkerRegistry.InvocationTarget invocationTarget) throws Exception {
+        invocationTarget.getMethod().invoke(invocationTarget.getBean(), cmd);
+        Long indexTime = System.currentTimeMillis();
+        jdbcTemplate.update("delete from " + commandTableName + " where id=?", new Object[]{ cmd.getId() });
+        return indexTime;
     }
 
 }

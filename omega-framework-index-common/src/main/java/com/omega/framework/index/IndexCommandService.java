@@ -29,6 +29,9 @@ public class IndexCommandService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Value("${elasticsearch.index.commandTableName:IndexCommand}")
+    private String commandTableName = "IndexCommand";
+
     @Autowired
     private IndexWorkerRegistry indexWorkerRegistry;
 
@@ -38,8 +41,8 @@ public class IndexCommandService {
     @Autowired
     private RedisTemplate redisTemplate;
 
-    @Value("${elasticsearch.index.commandTableName:IndexCommand}")
-    private String commandTableName = "IndexCommand";
+    @Value("${elasticsearch.refresh.interval:30000}")
+    private long refreshInterval = 30000;
 
     @Value("${elasticsearch.refresh.duration:500}")
     private long refreshDuration = 500L; // 预估的最长的refresh调用耗时
@@ -47,14 +50,15 @@ public class IndexCommandService {
     @Autowired
     private CuratorFramework curatorFramework;
 
-    @Autowired
-    private TransportClient elasticsearchClient;
-
     @Value("${elasticsearch.refresh.lockPath:/index/refresh}")
     private String lockPath = "/index/refresh";
 
     @Autowired
-    private IndexWorkerHelper indexWorkerHelper;
+    private TransportClient elasticsearchClient;
+
+    private String getCommandCacheKey(String cmdId) {
+        return "index/" + cmdId;
+    }
 
     public String exec(final IndexCommand cmd) {
         checkCommand(cmd);
@@ -92,7 +96,16 @@ public class IndexCommandService {
 
     private void invokeCommand(IndexCommand cmd) {
         IndexWorkerRegistry.InvocationTarget invocationTarget = indexWorkerRegistry.getInvocationTarget(cmd.getType());
-        indexWorkerInvoker.invoke(cmd, invocationTarget, true);
+
+        long indexTime = 0;
+        try {
+            indexTime = indexWorkerInvoker.invoke(cmd, invocationTarget);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        long lifecycle = refreshInterval + refreshDuration;
+        redisTemplate.opsForValue().set(getCommandCacheKey(cmd.getId()), indexTime, lifecycle, TimeUnit.MILLISECONDS);
     }
 
     protected void checkCommand(IndexCommand cmd) {
@@ -127,17 +140,12 @@ public class IndexCommandService {
         return lockPath + "/" + indexName;
     }
 
-    public void ensureRefresh(String indexName) {
-        Long indexTime = indexWorkerHelper.getLastCommandFinishTime(indexName);
-        if (indexTime == null) {
-            return;
-        }
-
-        ensureRefresh(indexName, indexTime);
-    }
-
     public void ensureRefresh(String indexName, String indexCommandId) {
-        Long indexTime = indexWorkerHelper.getCommandFinishTime(indexCommandId);
+        if (indexCommandId == null) {
+            throw new IllegalArgumentException("Parameter indexCommandId should NOT be NULL");
+        }
+
+        Long indexTime = (Long) redisTemplate.opsForValue().get(getCommandCacheKey(indexCommandId));
         if (indexTime == null) {
             return;
         }
@@ -145,7 +153,11 @@ public class IndexCommandService {
         ensureRefresh(indexName, indexTime);
     }
 
-    private void ensureRefresh(String indexName, Long indexTime) {
+    public void ensureRefresh(String indexName, Long indexTime) {
+        if (indexTime == null) {
+            throw new IllegalArgumentException("Parameter indexTime should NOT be NULL");
+        }
+
         String key = getRefreshCacheKey(indexName);
         Long refreshTime = (Long) redisTemplate.opsForValue().get(key);
         if (refreshTime != null && indexTime.compareTo(refreshTime) < 0) {
@@ -164,7 +176,7 @@ public class IndexCommandService {
                 }
 
                 // 时间戳一定要在调用ES刷新接口前获得
-                long now = System.currentTimeMillis();
+                Long now = System.currentTimeMillis();
                 elasticsearchClient.admin().indices().prepareRefresh(indexName).get();
                 redisTemplate.opsForValue().set(key, now);
             }
