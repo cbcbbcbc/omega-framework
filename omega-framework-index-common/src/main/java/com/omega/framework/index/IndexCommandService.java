@@ -122,8 +122,8 @@ public class IndexCommandService {
         }
     }
 
-    private String getCacheKey(String indexName) {
-        return indexName;
+    private String getRefreshCacheKey(String indexName) {
+        return indexName + "/refresh";
     }
 
     private String getLockName(String indexName) {
@@ -136,7 +136,7 @@ public class IndexCommandService {
             return;
         }
 
-        String key = getCacheKey(indexName);
+        String key = getRefreshCacheKey(indexName);
         Long refreshTime = (Long) redisTemplate.opsForValue().get(key);
         if (refreshTime != null && submitTime.compareTo(refreshTime) < 0) {
             return;
