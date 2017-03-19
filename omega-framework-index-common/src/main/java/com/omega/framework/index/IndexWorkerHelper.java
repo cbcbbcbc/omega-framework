@@ -23,8 +23,8 @@ public class IndexWorkerHelper {
     @Value("${elasticsearch.refresh.duration:500}")
     private long refreshDuration = 500L; // 预估的最长的refresh调用耗时
 
-    private String getCommandCacheKey(String commandId) {
-        return "index/" + commandId;
+    private String getCommandCacheKey(String cmdId) {
+        return "index/" + cmdId;
     }
 
     private String getIndexCacheKey(String indexName) {

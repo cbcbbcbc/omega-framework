@@ -136,8 +136,8 @@ public class IndexCommandService {
         ensureRefresh(indexName, indexTime);
     }
 
-    public void ensureRefresh(String indexName, String lastCommandId) {
-        Long indexTime = indexWorkerHelper.getCommandFinishTime(lastCommandId);
+    public void ensureRefresh(String indexName, String indexCommandId) {
+        Long indexTime = indexWorkerHelper.getCommandFinishTime(indexCommandId);
         if (indexTime == null) {
             return;
         }
