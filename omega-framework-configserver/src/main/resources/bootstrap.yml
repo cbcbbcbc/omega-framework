@@ -1,20 +1,7 @@
-server:
-  port: 8761
-
 eureka:
   instance:
     preferIpAddress: true
     instanceId: ${spring.cloud.client.ipAddress}:${server.port}
   client:
-    registerWithEureka: false
-    fetchRegistry: false
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
-
-logging:
-  path: /var/log
-  level:
-    root: WARN
-    com:
-      ongo360:
-        demo: DEBUG
