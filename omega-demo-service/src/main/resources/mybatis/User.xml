@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.omega.demo.service.dao.UserDao">
+
+    <select id="getById" resultType="com.omega.demo.api.bean.User">
+        select * from User
+        where id=#{id}
+    </select>
+
+
+    <insert id="create">
+        insert into User
+        (id, name, zoneCode)
+        values
+        (#{id}, #{name}, #{zoneCode})
+    </insert>
+</mapper>

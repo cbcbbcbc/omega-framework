@@ -1,5 +1,5 @@
 server:
-  port: 8085
+  port: 8082
 
 spring:
   rabbitmq:
@@ -17,14 +17,17 @@ mycat:
     password: rootpass
     tomcat:
       testOnBorrow: true
-  servers: localhost:3306
-
-task:
-  scheduler:
-    loadInterval: 10000
+  servers: 127.0.0.1:3306
 
 zookeeper:
   servers: 127.0.0.1:2181
+
+elasticsearch:
+  clusterName: omega
+  endPoints: localhost:9300
+
+mybatis:
+  mapper-locations: classpath:/mybatis/*.xml
 
 hystrix:
   command:
@@ -49,7 +52,7 @@ endpoints:
 logging:
   path: /var/log
   level:
-    root: WARN
+    root: INFO
     com:
       ongo360:
         demo: DEBUG

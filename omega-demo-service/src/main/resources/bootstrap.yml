@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: omega-demo-service
+  cloud:
+    config:
+      discovery:
+        enabled: false
+        serviceId: omega-framework-configserver
+      profile: dev
+      label: master
+
+eureka:
+  instance:
+    preferIpAddress: true
+    instanceId: ${spring.cloud.client.ipAddress}:${server.port}
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/

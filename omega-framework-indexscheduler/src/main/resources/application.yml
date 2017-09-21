@@ -34,7 +34,8 @@ hystrix:
     default:
       execution:
         isolation:
-          thread:
+          strategy: SEMAPHORE
+          semaphore:
             timeoutInMilliseconds: 5000
 
 default:
@@ -42,6 +43,11 @@ default:
     MaxAutoRetries: 0
     MaxAutoRetriesNextServer: 2
     OkToRetryOnAllOperations: true // All operations should be idempotent
+
+endpoints:
+  shutdown:
+    sensitive: false
+    enabled: true
 
 logging:
   path: /var/log

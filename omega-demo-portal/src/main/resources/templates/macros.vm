@@ -1,0 +1,4 @@
+#macro(HTML $str)$esc.escapeHtml($str)#end
+#macro(XML $str)$esc.escapeXml($str)#end
+#macro(JS $str)$esc.escapeJavaScript($str)#end
+#macro(URI $str)$urlCodec.encode($str, "UTF-8")#end

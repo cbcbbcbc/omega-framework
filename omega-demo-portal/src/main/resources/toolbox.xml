@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<toolbox>
+    <tool>
+        <key>esc</key>
+        <scope>application</scope>
+        <class>org.apache.commons.lang.StringEscapeUtils</class>
+    </tool>
+    <tool>
+        <key>urlCodec</key>
+        <scope>application</scope>
+        <class>org.apache.commons.codec.net.URLCodec</class>
+    </tool>
+</toolbox>

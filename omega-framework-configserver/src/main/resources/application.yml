@@ -18,6 +18,11 @@ spring:
         native:
           search-locations: file:${user.dir}/config-repo
 
+endpoints:
+  shutdown:
+    sensitive: false
+    enabled: true
+
 logging:
   path: /var/log
   level:

@@ -1,4 +1,4 @@
-package com.omega.framework.util.cache;
+package com.omega.framework.cache;
 
 /**
  * Created by jackychenb on 17/03/2017.

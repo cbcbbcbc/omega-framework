@@ -11,6 +11,11 @@ eureka:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
 
+endpoints:
+  shutdown:
+    sensitive: false
+    enabled: true
+
 logging:
   path: /var/log
   level:

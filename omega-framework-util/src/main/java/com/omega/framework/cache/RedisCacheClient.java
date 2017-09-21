@@ -1,4 +1,4 @@
-package com.omega.framework.util.cache;
+package com.omega.framework.cache;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
  * Created by jackychenb on 12/12/2016.
  */
 
-public class RedisCacheClient implements  ICacheClient {
+public class RedisCacheClient implements ICacheClient {
 
     private final RedisTemplate redisTemplate;
     public RedisCacheClient(RedisTemplate redisTemplate) {

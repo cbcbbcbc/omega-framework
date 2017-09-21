@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.omega.demo.service.dao.OrderDao">
+
+    <select id="getOrderFormById" resultType="com.omega.demo.api.bean.OrderForm">
+        select * from OrderForm
+        where id=#{id}
+    </select>
+
+    <select id="getOrderFormListByUserId" resultType="com.omega.demo.api.bean.OrderForm">
+        select * from OrderForm
+        where userId=#{userId}
+    </select>
+
+    <select id="getOrderDetailListByOrderFormId" resultType="com.omega.demo.api.bean.OrderDetail">
+        select * from OrderDetail
+        where orderFormId=#{orderFormId}
+    </select>
+
+    <insert id="createOrderForm">
+        insert into OrderForm
+        (id, userId, number, amount, gmtCreated)
+        values
+        (#{id}, #{userId}, #{number}, #{amount}, #{gmtCreated})
+    </insert>
+
+    <insert id="createOrderDetail">
+        insert into OrderDetail
+        (id, orderFormId, itemNo, itemName, price, qty, amount)
+        values
+        (#{id}, #{orderFormId}, #{itemNo}, #{itemName}, #{price}, #{qty}, #{amount})
+    </insert>
+
+</mapper>

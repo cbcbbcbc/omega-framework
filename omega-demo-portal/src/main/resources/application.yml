@@ -1,30 +1,27 @@
 server:
-  port: 8085
+  port: 8080
 
 spring:
+  velocity:
+    charset: UTF-8
+    properties:
+      input.encoding: UTF-8
+      output.encoding: UTF-8
+      velocimacro.library: macros.vm
+      velocimacro.library.autoreload: true
+    cache: false
+    toolbox-config-location: toolbox.xml
+  sleuth:
+    sampler:
+      percentage: 1
+  zipkin:
+    base-url: http://localhost:9411/
   rabbitmq:
     host: localhost
     port: 5672
     username: ongo360
     password: ongo360
     virtual-host: ongo360_vhost
-
-mycat:
-  datasource:
-    driverClassName: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost/sk_dev?useOldAliasMetadataBehavior=true
-    username: root
-    password: rootpass
-    tomcat:
-      testOnBorrow: true
-  servers: localhost:3306
-
-task:
-  scheduler:
-    loadInterval: 10000
-
-zookeeper:
-  servers: 127.0.0.1:2181
 
 hystrix:
   command:
@@ -49,7 +46,9 @@ endpoints:
 logging:
   path: /var/log
   level:
-    root: WARN
+    root: INFO
     com:
       ongo360:
         demo: DEBUG
+
+configTestValue: 'Hello 云梯 改一下+2'

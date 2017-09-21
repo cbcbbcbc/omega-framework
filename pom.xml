@@ -104,6 +104,9 @@
         <module>omega-framework-taskserver</module>
         <module>omega-framework-index-common</module>
         <module>omega-framework-indexscheduler</module>
+        <module>omega-demo-api</module>
+        <module>omega-demo-service</module>
+        <module>omega-demo-portal</module>
         <module>omega-framework-assembly</module>
     </modules>
 </project>

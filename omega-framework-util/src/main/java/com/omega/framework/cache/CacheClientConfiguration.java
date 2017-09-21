@@ -1,4 +1,4 @@
-package com.omega.framework.util.cache;
+package com.omega.framework.cache;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,5 +1,7 @@
-package com.omega.framework.util.cache;
+package com.omega.framework;
 
+import com.omega.framework.eureka.EurekaClientConfiguration;
+import com.omega.framework.feign.FeignClientsConfiguration;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.ElementType;
@@ -13,6 +15,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Import(CacheClientConfiguration.class)
-public @interface EnableCacheClient {
+@Import({ EurekaClientConfiguration.class, FeignClientsConfiguration.class })
+public @interface EnableOmegaServiceFramework {
 }

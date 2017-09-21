@@ -1,0 +1,6 @@
+<html>
+    <head></head>
+    <body>
+        <div>#HTML($result)</div>
+    </body>
+</html>
