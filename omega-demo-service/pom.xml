@@ -18,7 +18,7 @@
   <dependencies>
     <dependency>
       <groupId>com.omega.framework</groupId>
-      <artifactId>omega-framework-util</artifactId>
+      <artifactId>omega-framework-serviceframework</artifactId>
       <version>0.1</version>
     </dependency>
     <dependency>

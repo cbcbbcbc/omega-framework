@@ -95,15 +95,14 @@
         <!--module>omega-framework-eureka2</module>
         <module>omega-framework-eureka3</module-->
         <module>omega-framework-configserver</module>
-        <module>omega-framework-turbine</module>
-        <module>omega-framework-zipkin-server</module>
-        <module>omega-framework-admin-dashboard</module>
-        <module>omega-framework-util</module>
+        <module>omega-framework-serviceframework</module>
         <module>omega-framework-datasource</module>
         <module>omega-framework-task-common</module>
         <module>omega-framework-taskserver</module>
         <module>omega-framework-index-common</module>
         <module>omega-framework-indexscheduler</module>
+        <module>omega-framework-turbine</module>
+        <module>omega-framework-zipkin-server</module>
         <module>omega-demo-api</module>
         <module>omega-demo-service</module>
         <module>omega-demo-portal</module>
