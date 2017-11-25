@@ -37,18 +37,25 @@ public class FeignClientBeanPostProcessor implements BeanPostProcessor {
             // IMPORTANT: 针对不同的Spring Cloud，CachingSpringLoadBalancerFactory的构造函数有不同版本，如果升级Spring Cloud，此处代码需要做相应修改
             bean = new CachingSpringLoadBalancerFactory(clientFactory) {
                 public FeignLoadBalancer create(String clientName) {
-                    ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-                    HttpServletRequest leadRequest = attrs.getRequest();
-
                     String grayTag = null;
-                    Cookie[] cookies = leadRequest.getCookies();
-                    if (cookies != null) {
-                        for (Cookie cookie : cookies) {
-                            if (OmegaServiceContext.GRAY_TAG_COOKIE_NAME.equals(cookie.getName())) {
-                                grayTag = cookie.getValue();
-                                break;
+
+                    ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+                    if (attrs != null) {
+                        HttpServletRequest leadRequest = attrs.getRequest();
+
+                        Cookie[] cookies = leadRequest.getCookies();
+                        if (cookies != null) {
+                            for (Cookie cookie : cookies) {
+                                if (OmegaServiceContext.GRAY_TAG_COOKIE_NAME.equals(cookie.getName())) {
+                                    grayTag = cookie.getValue();
+                                    break;
+                                }
                             }
                         }
+                    }
+
+                    if (grayTag == null) {
+                        grayTag = OmegaServiceContext.getGrayTag();
                     }
 
                     if (grayTag == null) {
